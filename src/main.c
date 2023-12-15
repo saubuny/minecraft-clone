@@ -2,11 +2,37 @@
 #include <GLFW/glfw3.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
 
 // NOTE: Use Orthographic Projection
+
+char *getShaderContent(const char *fileName) {
+  FILE *fp;
+  long size;
+  char *shaderContent;
+
+  // Read file to get size
+  fp = fopen(fileName, "rb");
+  if (fp == NULL) {
+    return "";
+  }
+
+  fseek(fp, 0L, SEEK_END);
+  size = ftell(fp) + 1;
+  fclose(fp);
+
+  // Read file
+  fp = fopen(fileName, "r");
+  shaderContent = calloc(1, size);
+  fread(shaderContent, size - 1, 1, fp);
+  fclose(fp);
+
+  return shaderContent;
+}
 
 // Callback to resive viewport on window resize
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
@@ -24,23 +50,6 @@ void processInput(GLFWwindow *window) {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
   }
 }
-
-// TODO: Read in shaders from external files
-const char *vertexShaderSource =
-    "#version 330 core\n"
-    "layout (location = 0) in vec3 aPos;\n"
-    "void main()\n"
-    "{\n"
-    "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-    "}\0";
-
-const char *fragmentShaderSource =
-    "#version 330 core\n"
-    "out vec4 FragColor;\n"
-    "void main()\n"
-    "{\n"
-    "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-    "}\n\0";
 
 int main() {
   glfwInit();
@@ -70,6 +79,8 @@ int main() {
   // === Init Code for an Object ===
 
   // Create Vertex Shader
+  const char *vertexShaderSource =
+      getShaderContent("../src/shaders/vertex.glsl");
   unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
   glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
   glCompileShader(vertexShader);
@@ -84,6 +95,8 @@ int main() {
   }
 
   // Fragment Shader...
+  const char *fragmentShaderSource =
+      getShaderContent("../src/shaders/fragment.glsl");
   unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
   glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
   glCompileShader(fragmentShader);
