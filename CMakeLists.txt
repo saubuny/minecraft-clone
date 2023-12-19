@@ -37,11 +37,10 @@ add_executable(${PROJECT_NAME} src/main.c)
 # Installed libraries
 target_link_libraries(${PROJECT_NAME} glfw glad)
 
-# Add personal libraries here
+# Source files
+file(GLOB PROJECT_SRC_FILES CONFIGURE_DEPENDS "src/*.h" "src/*.c" "src/**/*.h" "src/**/*.c")
+target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SRC_FILES})
 
-# add_library(testlib STATIC src/testlib.c include/test/testlib.h)
-# target_include_directories(testlib PUBLIC include)
-# target_link_libraries(${PROJECT_NAME} PUBLIC testlib)
 
 # Properties...
 set_target_properties(${PROJECT_NAME} PROPERTIES CMAKE_C_STANDARD 99)

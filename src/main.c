@@ -4,35 +4,12 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include "shader.h"
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
 
 // NOTE: Use Orthographic Projection
-
-char *getShaderContent(const char *fileName) {
-  FILE *fp;
-  long size;
-  char *shaderContent;
-
-  // Read file to get size
-  fp = fopen(fileName, "rb");
-  if (fp == NULL) {
-    return "";
-  }
-
-  fseek(fp, 0L, SEEK_END);
-  size = ftell(fp) + 1;
-  fclose(fp);
-
-  // Read file
-  fp = fopen(fileName, "r");
-  shaderContent = calloc(1, size);
-  fread(shaderContent, size - 1, 1, fp);
-  fclose(fp);
-
-  return shaderContent;
-}
 
 // Callback to resive viewport on window resize
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
@@ -62,7 +39,7 @@ int main() {
 #endif
 
   GLFWwindow *window =
-      glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Terraria", NULL, NULL);
+      glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Minecraft", NULL, NULL);
   if (window == NULL) {
     printf("Failed to create GFLW window\n");
     glfwTerminate();
@@ -81,46 +58,17 @@ int main() {
   // Create Vertex Shader
   const char *vertexShaderSource =
       getShaderContent("../src/shaders/vertex.glsl");
-  unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-  glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-  glCompileShader(vertexShader);
-
-  int success;
-  char infoLog[512];
-
-  glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-  if (!success) {
-    glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-    printf("Error: Could not compile vertex shader\n%s\n", infoLog);
-  }
+  unsigned int vertexShader =
+      createShader(vertexShaderSource, GL_VERTEX_SHADER);
 
   // Fragment Shader...
   const char *fragmentShaderSource =
       getShaderContent("../src/shaders/fragment.glsl");
-  unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-  glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-  glCompileShader(fragmentShader);
-
-  glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-  if (!success) {
-    glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-    printf("Error: Could not compile fragment shader\n%s\n", infoLog);
-  }
+  unsigned int fragmentShader =
+      createShader(fragmentShaderSource, GL_FRAGMENT_SHADER);
 
   // Create shader program
-  unsigned int shaderProgram = glCreateProgram();
-  glAttachShader(shaderProgram, vertexShader);
-  glAttachShader(shaderProgram, fragmentShader);
-  glLinkProgram(shaderProgram);
-
-  glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-  if (!success) {
-    glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-    printf("Error: Could not link shaders to program\n%s\n", infoLog);
-  }
-
-  glDeleteShader(vertexShader);
-  glDeleteShader(fragmentShader);
+  unsigned int shaderProgram = createProgram(vertexShader, fragmentShader);
 
   // clang-format off
 
