@@ -57,13 +57,13 @@ int main() {
 
   // Create Vertex Shader
   const char *vertexShaderSource =
-      getShaderContent("../src/shaders/vertex.glsl");
+      getShaderContent("../assets/shaders/vertex.vs");
   unsigned int vertexShader =
       createShader(vertexShaderSource, GL_VERTEX_SHADER);
 
   // Fragment Shader...
   const char *fragmentShaderSource =
-      getShaderContent("../src/shaders/fragment.glsl");
+      getShaderContent("../assets/shaders/fragment.fs");
   unsigned int fragmentShader =
       createShader(fragmentShaderSource, GL_FRAGMENT_SHADER);
 
