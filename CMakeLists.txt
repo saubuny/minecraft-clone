@@ -16,7 +16,7 @@ FetchContent_Declare(
 set(GLFW_BUILD_EXAMPLES OFF CACHE INTERNAL "")
 set(GLFW_BUILD_TESTS OFF CACHE INTERNAL "")
 set(GLFW_BUILD_DOCS OFF CACHE INTERNAL "")
-set(GLFW_USE_WAYLAND OFF CACHE INTERNAL "")
+set(GLFW_USE_WAYLAND ON CACHE INTERNAL "")
 
 FetchContent_MakeAvailable(glfw)
 
@@ -29,20 +29,20 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(glad)
 
-# GLM
-set(GLM_VERSION 0.9.1)
+# CGLM
+set(CGLM_VERSION 0.9.1)
 FetchContent_Declare(
-	glm
-	URL https://github.com/recp/cglm/archive/refs/tags/v${GLM_VERSION}.tar.gz
+	cglm
+	URL https://github.com/recp/cglm/archive/refs/tags/v${CGLM_VERSION}.tar.gz
 	FIND_PACKAGE_ARGS ${GLM_VERSION}
 )
-FetchContent_MakeAvailable(glm)
+FetchContent_MakeAvailable(cglm)
 
 # Our entry point
 add_executable(${PROJECT_NAME} src/main.c)
 
 # Installed libraries
-target_link_libraries(${PROJECT_NAME} glfw glad glm)
+target_link_libraries(${PROJECT_NAME} glfw glad cglm)
 
 # Source files
 file(GLOB PROJECT_SRC_FILES CONFIGURE_DEPENDS "src/*.h" "src/*.c" "src/**/*.h" "src/**/*.c")
