@@ -5,6 +5,12 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(FetchContent)
 
+# Darn Windows Compilation
+IF (WIN32)
+	set (CMAKE_CXX_COMPILER "C:/MinGW/bin/g++.exe")
+	set (CMAKE_C_COMPILER "C:/MinGW/bin/gcc.exe")
+ENDIF()
+
 # GLFW
 set(GLFW_VERSION 3.3.8)
 FetchContent_Declare(
