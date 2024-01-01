@@ -1,15 +1,22 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+
+#include <cglm/cglm.h>
+#include <cglm/types.h>
+#include <cglm/mat4.h>
+#include <cglm/affine-pre.h>
+#include <cglm/affine.h>
+#include <cglm/util.h>
+
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "shader.h"
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
-
-// NOTE: Use Orthographic Projection
 
 // Callback to resive viewport on window resize
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
@@ -17,15 +24,12 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
 }
 
 void processInput(GLFWwindow *window) {
-  if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+  if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     glfwSetWindowShouldClose(window, true);
-  }
-  if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) {
+  if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-  }
-  if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) {
+  if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-  }
 }
 
 int main() {
@@ -55,38 +59,32 @@ int main() {
 
   // === Init Code for an Object ===
 
-  // Create Vertex Shader
+  // Shaders
   const char *vertexShaderSource =
       getShaderContent("../assets/shaders/vertex.vs");
   unsigned int vertexShader =
       createShader(vertexShaderSource, GL_VERTEX_SHADER);
 
-  // Fragment Shader...
   const char *fragmentShaderSource =
       getShaderContent("../assets/shaders/fragment.fs");
   unsigned int fragmentShader =
       createShader(fragmentShaderSource, GL_FRAGMENT_SHADER);
 
-  // Create shader program
   unsigned int shaderProgram = createProgram(vertexShader, fragmentShader);
-
-  // clang-format off
 
   // Vertices for our triangles
   float vertices[] = {
-		 0.5f,  0.5f, 0.0f, 
-		 0.5f, -0.5f, 0.0f, 
-		-0.5f, -0.5f, 0.0f,
-		-0.5f,  0.5f, 0.0f
-	};
+      0.5f,  0.5f,  0.0f, //
+      0.5f,  -0.5f, 0.0f, //
+      -0.5f, -0.5f, 0.0f, //
+      -0.5f, 0.5f,  0.0f, //
+  };
 
-	// Define two triangles based off of array of vertices
-	unsigned int indices[] = {
-		0, 1, 3,
-		1, 2, 3
-	};
-
-  // clang-format on
+  // Define two triangles based off of array of vertices
+  unsigned int indices[] = {
+      0, 1, 3, //
+      1, 2, 3, //
+  };
 
   // Create objects
   unsigned int VBO, VAO, EBO;
@@ -112,6 +110,9 @@ int main() {
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindVertexArray(0);
 
+  // GLM Test
+  mat4 trans;
+
   // Main loop
   while (!glfwWindowShouldClose(window)) {
     processInput(window);
@@ -120,7 +121,15 @@ int main() {
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
+    glm_mat4_identity(trans);
+    // glm_translate(trans, (vec3){0.5f, -0.5f, 0.0f});
+    glm_rotate(trans, glfwGetTime(), (vec3){0.0f, 0.0f, 1.0f});
+
     glUseProgram(shaderProgram);
+    unsigned int transformLocation =
+        glGetUniformLocation(shaderProgram, "transform");
+    glUniformMatrix4fv(transformLocation, 1, GL_FALSE, trans[0]);
+
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
