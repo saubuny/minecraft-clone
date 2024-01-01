@@ -2,14 +2,25 @@
 
 A Minecraft clone written in C99 and OpenGL
 
-## How to run
+## How to compile
 
-This has only been tested on a MacOS system, so to build on there, run these commands from the base directory
+MacOS & Linux
 
 ```bash
-mkdir build && cd build
+mkdir build
+cd build
 cmake ..
 make
+./minecraft
+```
+
+Windows (Have MINGW installed in the default location)
+
+```bash
+mkdir build
+cd build
+cmake -G "MinGW Makefiles" ..
+cmake --build ..
 ./minecraft
 ```
 
