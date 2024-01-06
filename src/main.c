@@ -9,6 +9,8 @@
 #include <cglm/util.h>
 #include <cglm/cam.h>
 
+#include <stb_image.h>
+
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -57,6 +59,8 @@ int main() {
     return -1;
   }
 
+  glEnable(GL_DEPTH_TEST);
+
   // === Init Code for an Object ===
 
   // Shaders
@@ -72,62 +76,104 @@ int main() {
 
   unsigned int shaderProgram = createProgram(vertexShader, fragmentShader);
 
-  // Vertices for our triangles
+  // Cube Vertices (Horrifying)
   float vertices[] = {
-      0.5f,  0.5f,  0.0f, //
-      0.5f,  -0.5f, 0.0f, //
-      -0.5f, -0.5f, 0.0f, //
-      -0.5f, 0.5f,  0.0f, //
+      -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 0.5f,  -0.5f, -0.5f, 1.0f, 0.0f,
+      0.5f,  0.5f,  -0.5f, 1.0f, 1.0f, 0.5f,  0.5f,  -0.5f, 1.0f, 1.0f,
+      -0.5f, 0.5f,  -0.5f, 0.0f, 1.0f, -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+
+      -0.5f, -0.5f, 0.5f,  0.0f, 0.0f, 0.5f,  -0.5f, 0.5f,  1.0f, 0.0f,
+      0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+      -0.5f, 0.5f,  0.5f,  0.0f, 1.0f, -0.5f, -0.5f, 0.5f,  0.0f, 0.0f,
+
+      -0.5f, 0.5f,  0.5f,  1.0f, 0.0f, -0.5f, 0.5f,  -0.5f, 1.0f, 1.0f,
+      -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+      -0.5f, -0.5f, 0.5f,  0.0f, 0.0f, -0.5f, 0.5f,  0.5f,  1.0f, 0.0f,
+
+      0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.5f,  0.5f,  -0.5f, 1.0f, 1.0f,
+      0.5f,  -0.5f, -0.5f, 0.0f, 1.0f, 0.5f,  -0.5f, -0.5f, 0.0f, 1.0f,
+      0.5f,  -0.5f, 0.5f,  0.0f, 0.0f, 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+      -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.5f,  -0.5f, -0.5f, 1.0f, 1.0f,
+      0.5f,  -0.5f, 0.5f,  1.0f, 0.0f, 0.5f,  -0.5f, 0.5f,  1.0f, 0.0f,
+      -0.5f, -0.5f, 0.5f,  0.0f, 0.0f, -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+
+      -0.5f, 0.5f,  -0.5f, 0.0f, 1.0f, 0.5f,  0.5f,  -0.5f, 1.0f, 1.0f,
+      0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+      -0.5f, 0.5f,  0.5f,  0.0f, 0.0f, -0.5f, 0.5f,  -0.5f, 0.0f, 1.0f,
   };
 
-  // Define two triangles based off of array of vertices
-  unsigned int indices[] = {
-      0, 1, 3, //
-      1, 2, 3, //
-  };
-
-  // Create objects
-  unsigned int VBO, VAO, EBO;
+  unsigned int VBO, VAO;
   glGenVertexArrays(1, &VAO);
   glGenBuffers(1, &VBO);
-  glGenBuffers(1, &EBO);
 
-  // Bind VAO first, then bind VBO & EBO, then configure vertex attribs
   glBindVertexArray(VAO);
 
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
-               GL_STATIC_DRAW);
-
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
   glEnableVertexAttribArray(0);
 
-  // Unbind Buffers, do NOT unbind the EBO while a VAO is active
-  // The EBO is automatically stored in the VAO so it is not necessary
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-  glBindVertexArray(0);
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float),
+                        (void *)(3 * sizeof(float)));
+  glEnableVertexAttribArray(1);
 
-  // === Coordinates ===
+  // === Textures ===
 
-  // Model Matrix consists of transforms applied to every object
+  unsigned int texture1;
+
+  glGenTextures(1, &texture1);
+  glBindTexture(GL_TEXTURE_2D, texture1);
+
+  // Set the texture wrapping parameters
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+  // Set texture filtering parameters
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  // Load image, create texture and generate mipmaps
+  int width, height, nrChannels;
+
+  stbi_set_flip_vertically_on_load(true);
+
+  unsigned char *data = stbi_load("../assets/textures/grass.png", &width,
+                                  &height, &nrChannels, 0);
+  if (data) {
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB,
+                 GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+  } else {
+    printf("Failed to load texture");
+  }
+
+  stbi_image_free(data);
+
+  // Tell each OpenGL texture sampler which texture it belongs to
+  glUseProgram(shaderProgram);
+  glUniform1i(glGetUniformLocation(shaderProgram, "grass"), 0);
+
+  // GLM
   mat4 model;
   glm_mat4_identity(model);
-
-  glm_rotate(model, glm_rad(-55.0f),
-             (vec3){1.0f, 0.0f, 0.0f}); // Rotate along x-axis
-
-  // View Matrix... The camera
   mat4 view;
   glm_mat4_identity(view);
-  glm_translate(view, (vec3){0.0f, 0.0f, -3.0f});
-
-  // Projection Matrix
   mat4 projection;
+  glm_mat4_identity(projection);
+
+  unsigned int modelLoc = glGetUniformLocation(shaderProgram, "model");
+  unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
+  unsigned int projectionLoc =
+      glGetUniformLocation(shaderProgram, "projection");
+
+  glm_translate(view, (vec3){0.0f, 0.0f, -3.0f});
   glm_perspective(glm_rad(45.0f), (float)WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f,
                   100.0f, projection);
+
+  // Projection Matrix doesn't change often
+  glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, projection[0]);
 
   // Main loop
   while (!glfwWindowShouldClose(window)) {
@@ -135,22 +181,23 @@ int main() {
 
     // === Rendering === //
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // Shader
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture1);
 
     glUseProgram(shaderProgram);
 
-    unsigned int modelLoc = glGetUniformLocation(shaderProgram, "model");
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, model[0]);
+    // === Coordinates ===
+    glm_rotate(model, glfwGetTime() * glm_rad(50.0f), (vec3){0.5f, 1.0f, 0.0f});
 
-    unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, model[0]);
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, view[0]);
 
-    unsigned int projectionLoc =
-        glGetUniformLocation(shaderProgram, "projection");
-    glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, projection[0]);
-
+    // Draw
     glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
 
     // === Update === //
     glfwPollEvents();
@@ -160,7 +207,6 @@ int main() {
   // Cleanup
   glDeleteVertexArrays(1, &VAO);
   glDeleteBuffers(1, &VBO);
-  glDeleteBuffers(1, &EBO);
   glDeleteProgram(shaderProgram);
 
   glfwTerminate();

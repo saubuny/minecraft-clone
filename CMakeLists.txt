@@ -50,8 +50,11 @@ add_executable(${PROJECT_NAME} src/main.c)
 # Installed libraries
 target_link_libraries(${PROJECT_NAME} glfw glad cglm)
 
+# Header-only Library
+target_include_directories(${PROJECT_NAME} PRIVATE include)
+
 # Source files
-file(GLOB PROJECT_SRC_FILES CONFIGURE_DEPENDS "src/*.h" "src/*.c" "src/**/*.h" "src/**/*.c")
+file(GLOB PROJECT_SRC_FILES CONFIGURE_DEPENDS "src/*.h" "src/*.c" "src/**/*.h" "src/**/*.c" "include/*.h" "include/*.c")
 target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SRC_FILES})
 
 
