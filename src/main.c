@@ -7,12 +7,12 @@
 #include <cglm/affine-pre.h>
 #include <cglm/affine.h>
 #include <cglm/util.h>
+#include <cglm/cam.h>
 
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include "shader.h"
 
 #define WINDOW_WIDTH 800
@@ -110,8 +110,24 @@ int main() {
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindVertexArray(0);
 
-  // GLM Test
-  mat4 trans;
+  // === Coordinates ===
+
+  // Model Matrix consists of transforms applied to every object
+  mat4 model;
+  glm_mat4_identity(model);
+
+  glm_rotate(model, glm_rad(-55.0f),
+             (vec3){1.0f, 0.0f, 0.0f}); // Rotate along x-axis
+
+  // View Matrix... The camera
+  mat4 view;
+  glm_mat4_identity(view);
+  glm_translate(view, (vec3){0.0f, 0.0f, -3.0f});
+
+  // Projection Matrix
+  mat4 projection;
+  glm_perspective(glm_rad(45.0f), (float)WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f,
+                  100.0f, projection);
 
   // Main loop
   while (!glfwWindowShouldClose(window)) {
@@ -121,14 +137,17 @@ int main() {
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    glm_mat4_identity(trans);
-    // glm_translate(trans, (vec3){0.5f, -0.5f, 0.0f});
-    glm_rotate(trans, glfwGetTime(), (vec3){0.0f, 0.0f, 1.0f});
-
     glUseProgram(shaderProgram);
-    unsigned int transformLocation =
-        glGetUniformLocation(shaderProgram, "transform");
-    glUniformMatrix4fv(transformLocation, 1, GL_FALSE, trans[0]);
+
+    unsigned int modelLoc = glGetUniformLocation(shaderProgram, "model");
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, model[0]);
+
+    unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
+    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, view[0]);
+
+    unsigned int projectionLoc =
+        glGetUniformLocation(shaderProgram, "projection");
+    glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, projection[0]);
 
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
