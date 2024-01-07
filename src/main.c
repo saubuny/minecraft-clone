@@ -8,7 +8,9 @@
 #include <cglm/affine.h>
 #include <cglm/util.h>
 #include <cglm/cam.h>
+#include <cglm/vec3.h>
 
+#include <math.h>
 #include <stb_image.h>
 
 #include <stdio.h>
@@ -163,17 +165,41 @@ int main() {
   mat4 projection;
   glm_mat4_identity(projection);
 
+  vec3 cameraPos;
+  glm_vec3_make((vec3){0.0f, 0.0f, 0.0f}, cameraPos);
+
+  vec3 cameraTarget;
+  glm_vec3_make((vec3){0.0f, 0.0f, 0.0f}, cameraTarget);
+
+  vec3 cameraDirection;
+  glm_vec3_sub(cameraPos, cameraTarget, cameraDirection);
+  glm_normalize(cameraDirection);
+
+  vec3 up;
+  glm_vec3_make((vec3){0.0f, 1.0f, 0.0f}, up);
+
+  vec3 cameraRight;
+  glm_cross(up, cameraDirection, cameraRight);
+  glm_normalize(cameraRight);
+
+  vec3 cameraUp;
+  glm_cross(cameraDirection, cameraRight, cameraUp);
+
+  const float radius = 10.0f;
+
   unsigned int modelLoc = glGetUniformLocation(shaderProgram, "model");
   unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
   unsigned int projectionLoc =
       glGetUniformLocation(shaderProgram, "projection");
 
-  glm_translate(view, (vec3){0.0f, 0.0f, -3.0f});
+  // glm_translate(view, (vec3){0.0f, 0.0f, -3.0f});
   glm_perspective(glm_rad(45.0f), (float)WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f,
                   100.0f, projection);
 
   // Projection Matrix doesn't change often
   glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, projection[0]);
+
+  // === Camera ===
 
   // Main loop
   while (!glfwWindowShouldClose(window)) {
@@ -190,7 +216,13 @@ int main() {
     glUseProgram(shaderProgram);
 
     // === Coordinates ===
-    glm_rotate(model, glm_rad(2.5f), (vec3){0.0f, 1.0f, 0.0f});
+    // glm_rotate(model, glm_rad(2.5f), (vec3){0.0f, 1.0f, 0.0f});
+
+    float camX = sin(glfwGetTime()) * radius;
+    float camZ = cos(glfwGetTime()) * radius;
+
+    glm_lookat((vec3){camX, 0.0f, camZ}, (vec3){0.0f, 0.0f, 0.0f},
+               (vec3){0.0f, 1.0f, 0.0f}, view);
 
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, model[0]);
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, view[0]);
