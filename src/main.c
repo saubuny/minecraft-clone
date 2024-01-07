@@ -190,7 +190,7 @@ int main() {
     glUseProgram(shaderProgram);
 
     // === Coordinates ===
-    glm_rotate(model, glfwGetTime() * glm_rad(50.0f), (vec3){0.5f, 1.0f, 0.0f});
+    glm_rotate(model, glm_rad(2.5f), (vec3){0.0f, 1.0f, 0.0f});
 
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, model[0]);
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, view[0]);
