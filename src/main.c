@@ -67,12 +67,12 @@ int main() {
 
   // Shaders
   const char *vertexShaderSource =
-      getShaderContent("../assets/shaders/vertex.vs");
+      getShaderContent("./assets/shaders/vertex.vs");
   unsigned int vertexShader =
       createShader(vertexShaderSource, GL_VERTEX_SHADER);
 
   const char *fragmentShaderSource =
-      getShaderContent("../assets/shaders/fragment.fs");
+      getShaderContent("./assets/shaders/fragment.fs");
   unsigned int fragmentShader =
       createShader(fragmentShaderSource, GL_FRAGMENT_SHADER);
 
@@ -141,8 +141,8 @@ int main() {
 
   stbi_set_flip_vertically_on_load(true);
 
-  unsigned char *data = stbi_load("../assets/textures/grass.png", &width,
-                                  &height, &nrChannels, 0);
+  unsigned char *data =
+      stbi_load("./assets/textures/grass.png", &width, &height, &nrChannels, 0);
   if (data) {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB,
                  GL_UNSIGNED_BYTE, data);
